@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  # Redis service for Celery broker and cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - product_importer
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: product_importer
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - product_importer
+
+  # Main FastAPI application
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/product_importer
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=change-this-in-production
+      - DEBUG=True
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - product_importer
+    command: >
+      sh -c "
+        # Wait for database to be ready
+        while ! nc -z postgres 5432; do sleep 1; done;
+        
+        # Run database migrations
+        alembic upgrade head;
+        
+        # Start the application
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+
+  # Celery worker for background tasks
+  celery-worker:
+    build: .
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/product_importer
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=change-this-in-production
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - product_importer
+    command: >
+      sh -c "
+        # Wait for database and redis to be ready
+        while ! nc -z postgres 5432; do sleep 1; done;
+        while ! nc -z redis 6379; do sleep 1; done;
+        
+        # Start Celery worker
+        celery -A app.celery worker --loglevel=info --concurrency=2
+      "
+
+  # Celery Flower for monitoring (optional)
+  celery-flower:
+    build: .
+    ports:
+      - "5555:5555"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+      - celery-worker
+    networks:
+      - product_importer
+    command: >
+      sh -c "
+        # Wait for redis to be ready
+        while ! nc -z redis 6379; do sleep 1; done;
+        
+        # Start Flower
+        celery -A app.celery flower --port=5555
+      "
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  product_importer:
+    driver: bridge

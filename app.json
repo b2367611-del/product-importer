@@ -1,0 +1,55 @@
+{
+  "name": "Product Importer",
+  "description": "A scalable web application for importing large CSV files with webhook notifications",
+  "repository": "https://github.com/YOUR_USERNAME/Product_Importer",
+  "logo": "",
+  "keywords": ["fastapi", "celery", "postgresql", "csv", "webhooks", "import"],
+  "stack": "heroku-22",
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    },
+    "webhook_worker": {
+      "quantity": 1,
+      "size": "basic"
+    },
+    "upload_worker": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql:mini"
+    },
+    {
+      "plan": "heroku-redis:mini"
+    }
+  ],
+  "env": {
+    "DATABASE_URL": {
+      "description": "PostgreSQL database URL (automatically set by Heroku Postgres addon)",
+      "required": false
+    },
+    "REDIS_URL": {
+      "description": "Redis URL for Celery (automatically set by Heroku Redis addon)",
+      "required": false
+    },
+    "SECRET_KEY": {
+      "description": "Secret key for the application",
+      "generator": "secret"
+    },
+    "DEBUG": {
+      "description": "Debug mode",
+      "value": "false"
+    },
+    "ENVIRONMENT": {
+      "description": "Environment setting",
+      "value": "production"
+    }
+  },
+  "scripts": {
+    "postdeploy": "alembic upgrade head"
+  }
+}

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Importer - Acme Inc.</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#"><i class="bi bi-box-seam"></i> Product Importer</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#upload" data-tab="upload">Upload</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#products" data-tab="products">Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#webhooks" data-tab="webhooks">Webhooks</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#jobs" data-tab="jobs">Import Jobs</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Upload Section -->
+        <div id="upload-section" class="tab-content active">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-cloud-upload"></i> Upload CSV File</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="upload-form" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <label for="csvFile" class="form-label">Select CSV File</label>
+                                    <input type="file" class="form-control" id="csvFile" accept=".csv" required>
+                                    <div class="form-text">
+                                        Maximum file size: 100MB. Required columns: SKU, Name
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary" id="upload-btn">
+                                    <i class="bi bi-upload"></i> Upload File
+                                </button>
+                            </form>
+                            
+                            <!-- Progress Section -->
+                            <div id="progress-section" style="display: none;" class="mt-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6>Import Progress</h6>
+                                        <div class="progress mb-3" style="height: 25px;">
+                                            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                                                 role="progressbar" style="width: 0%">0%</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <small class="text-muted">Status:</small><br>
+                                                <span id="status-text" class="badge bg-info">Pending</span>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <small class="text-muted">Processed:</small><br>
+                                                <span id="processed-count">0</span> / <span id="total-count">0</span>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <small class="text-muted">Successful:</small><br>
+                                                <span id="successful-count" class="text-success">0</span>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <small class="text-muted">Failed:</small><br>
+                                                <span id="failed-count" class="text-danger">0</span>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <small class="text-muted">Estimated time remaining:</small>
+                                            <span id="eta-text">Calculating...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Section -->
+        <div id="products-section" class="tab-content">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-box"></i> Product Management</h5>
+                    <div>
+                        <button class="btn btn-success btn-sm" id="add-product-btn">
+                            <i class="bi bi-plus"></i> Add Product
+                        </button>
+                        <button class="btn btn-danger btn-sm" id="delete-all-btn">
+                            <i class="bi bi-trash"></i> Delete All
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Filters -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control form-control-sm" id="filter-sku" placeholder="Filter by SKU">
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control form-control-sm" id="filter-name" placeholder="Filter by Name">
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select form-select-sm" id="filter-active">
+                                <option value="">All Status</option>
+                                <option value="true">Active</option>
+                                <option value="false">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-secondary btn-sm" id="filter-btn">
+                                <i class="bi bi-search"></i> Filter
+                            </button>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-secondary btn-sm" id="clear-filters-btn">
+                                <i class="bi bi-x-circle"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Products Table -->
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="products-table">
+                            <thead>
+                                <tr>
+                                    <th>SKU</th>
+                                    <th>Name</th>
+                                    <th>Price</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="products-tbody">
+                                <!-- Products will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <nav aria-label="Products pagination">
+                        <ul class="pagination pagination-sm justify-content-center" id="products-pagination">
+                            <!-- Pagination will be loaded here -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- Webhooks Section -->
+        <div id="webhooks-section" class="tab-content">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-webhook"></i> Webhook Management</h5>
+                    <button class="btn btn-success btn-sm" id="add-webhook-btn">
+                        <i class="bi bi-plus"></i> Add Webhook
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="webhooks-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>URL</th>
+                                    <th>Events</th>
+                                    <th>Status</th>
+                                    <th>Last Test</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="webhooks-tbody">
+                                <!-- Webhooks will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import Jobs Section -->
+        <div id="jobs-section" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-check"></i> Import Jobs History
+                        <small id="jobs-auto-refresh" class="text-muted ms-2" style="display: none;">
+                            <i class="bi bi-arrow-clockwise fa-spin"></i> Auto-refreshing every 5s
+                        </small>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="jobs-table">
+                            <thead>
+                                <tr>
+                                    <th>Filename</th>
+                                    <th>Status</th>
+                                    <th>Progress</th>
+                                    <th>Records</th>
+                                    <th>Success Rate</th>
+                                    <th>Started At</th>
+                                    <th>Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody id="jobs-tbody">
+                                <!-- Jobs will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal fade" id="productModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productModalTitle">Add Product</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="product-form">
+                    <div class="modal-body">
+                        <input type="hidden" id="product-id">
+                        <div class="mb-3">
+                            <label for="product-sku" class="form-label">SKU *</label>
+                            <input type="text" class="form-control" id="product-sku" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="product-name" class="form-label">Name *</label>
+                            <input type="text" class="form-control" id="product-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="product-description" class="form-label">Description</label>
+                            <textarea class="form-control" id="product-description" rows="3"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="product-price" class="form-label">Price</label>
+                                    <input type="number" class="form-control" id="product-price" step="0.01" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="product-inventory" class="form-label">Inventory</label>
+                                    <input type="number" class="form-control" id="product-inventory" min="0" value="0">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="product-category" class="form-label">Category</label>
+                                    <input type="text" class="form-control" id="product-category">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="product-brand" class="form-label">Brand</label>
+                                    <input type="text" class="form-control" id="product-brand">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="product-active" checked>
+                                <label class="form-check-label" for="product-active">
+                                    Active
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Product</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Webhook Modal -->
+    <div class="modal fade" id="webhookModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="webhookModalTitle">Add Webhook</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="webhook-form">
+                    <div class="modal-body">
+                        <input type="hidden" id="webhook-id">
+                        <div class="mb-3">
+                            <label for="webhook-name" class="form-label">Name *</label>
+                            <input type="text" class="form-control" id="webhook-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="webhook-url" class="form-label">URL *</label>
+                            <input type="url" class="form-control" id="webhook-url" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Event Types *</label>
+                            <div class="form-check">
+                                <input class="form-check-input event-type" type="checkbox" value="product.created" id="event-created">
+                                <label class="form-check-label" for="event-created">Product Created</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input event-type" type="checkbox" value="product.updated" id="event-updated">
+                                <label class="form-check-label" for="event-updated">Product Updated</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input event-type" type="checkbox" value="product.deleted" id="event-deleted">
+                                <label class="form-check-label" for="event-deleted">Product Deleted</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input event-type" type="checkbox" value="import.completed" id="event-import">
+                                <label class="form-check-label" for="event-import">Import Completed</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="webhook-timeout" class="form-label">Timeout (seconds)</label>
+                                    <input type="number" class="form-control" id="webhook-timeout" value="30" min="1" max="300">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="webhook-retries" class="form-label">Retry Count</label>
+                                    <input type="number" class="form-control" id="webhook-retries" value="3" min="0" max="10">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="webhook-secret" class="form-label">Secret Key (optional)</label>
+                            <input type="text" class="form-control" id="webhook-secret">
+                            <div class="form-text">Used for webhook signature verification</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="webhook-active" checked>
+                                <label class="form-check-label" for="webhook-active">
+                                    Active
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Webhook</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

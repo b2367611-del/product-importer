@@ -1,0 +1,16 @@
+sku,name,description,price,category,brand,inventory_count,is_active
+LAPTOP-001,Dell XPS 13,High-performance ultrabook with Intel Core i7,1299.99,Electronics,Dell,50,true
+PHONE-001,iPhone 15 Pro,Latest iPhone with A17 Pro chip,999.99,Electronics,Apple,100,true
+BOOK-001,Clean Code,A Handbook of Agile Software Craftsmanship,42.99,Books,Prentice Hall,25,true
+CHAIR-001,Ergonomic Office Chair,Comfortable office chair with lumbar support,299.99,Furniture,Herman Miller,10,true
+COFFEE-001,Premium Coffee Beans,Single origin arabica coffee beans,24.99,Food & Beverage,Blue Bottle,200,true
+LAPTOP-002,MacBook Pro 14,Apple M3 Pro chip with 14-inch display,1999.99,Electronics,Apple,30,true
+PHONE-002,Samsung Galaxy S24,Latest Android flagship phone,899.99,Electronics,Samsung,75,true
+BOOK-002,Design Patterns,Elements of Reusable Object-Oriented Software,54.99,Books,Addison-Wesley,15,true
+CHAIR-002,Gaming Chair,RGB gaming chair with 4D armrests,399.99,Furniture,Secretlab,20,true
+COFFEE-002,Espresso Blend,Dark roast espresso blend,29.99,Food & Beverage,Stumptown,150,true
+TABLET-001,iPad Pro 12.9,M2 chip with 12.9-inch Liquid Retina display,1099.99,Electronics,Apple,40,true
+HEADPHONE-001,AirPods Pro,Active noise cancellation wireless earbuds,249.99,Electronics,Apple,80,true
+MONITOR-001,4K Gaming Monitor,32-inch 4K HDR gaming monitor,699.99,Electronics,LG,25,true
+KEYBOARD-001,Mechanical Keyboard,RGB mechanical gaming keyboard,159.99,Electronics,Corsair,60,true
+MOUSE-001,Wireless Gaming Mouse,High-precision wireless gaming mouse,99.99,Electronics,Logitech,90,true
