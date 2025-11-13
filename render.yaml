@@ -86,6 +86,7 @@ services:
     name: product-importer-redis
     plan: starter
     maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
 
 databases:
   - name: product-importer-db
