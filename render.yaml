@@ -4,7 +4,7 @@ services:
   - type: web
     name: product-importer-web
     env: python
-    plan: starter
+    plan: free
     repo: https://github.com/b2367611-del/product-importer
     branch: main
     buildCommand: pip install -r requirements.txt
@@ -29,7 +29,7 @@ services:
   - type: worker
     name: webhook-worker
     env: python
-    plan: starter
+    plan: free
     repo: https://github.com/b2367611-del/product-importer
     branch: main
     buildCommand: pip install -r requirements.txt
@@ -57,7 +57,7 @@ services:
   - type: worker
     name: upload-worker
     env: python
-    plan: starter
+    plan: free
     repo: https://github.com/b2367611-del/product-importer
     branch: main
     buildCommand: pip install -r requirements.txt
@@ -84,7 +84,7 @@ services:
 
   - type: redis
     name: product-importer-redis
-    plan: starter
+    plan: free
     maxmemoryPolicy: allkeys-lru
     ipAllowList: []
 
@@ -92,4 +92,4 @@ databases:
   - name: product-importer-db
     databaseName: product_importer
     user: product_user
-    plan: starter
+    plan: free
