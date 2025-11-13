@@ -5,6 +5,8 @@ services:
     name: product-importer-web
     env: python
     plan: starter
+    repo: https://github.com/b2367611-del/product-importer
+    branch: main
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
@@ -28,13 +30,18 @@ services:
     name: webhook-worker
     env: python
     plan: starter
+    repo: https://github.com/b2367611-del/product-importer
+    branch: main
     buildCommand: pip install -r requirements.txt
     startCommand: celery -A app.celery worker --loglevel=info --pool=solo -Q webhook_queue -n webhook_worker@%h
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
       - key: SECRET_KEY
-        sync: false
+        fromService:
+          type: web
+          name: product-importer-web
+          envVarKey: SECRET_KEY
       - key: ENVIRONMENT
         value: production
       - key: DATABASE_URL
@@ -51,13 +58,18 @@ services:
     name: upload-worker
     env: python
     plan: starter
+    repo: https://github.com/b2367611-del/product-importer
+    branch: main
     buildCommand: pip install -r requirements.txt
     startCommand: celery -A app.celery worker --loglevel=info --pool=solo -Q upload_queue -n upload_worker@%h
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
       - key: SECRET_KEY
-        sync: false
+        fromService:
+          type: web
+          name: product-importer-web
+          envVarKey: SECRET_KEY
       - key: ENVIRONMENT
         value: production
       - key: DATABASE_URL
@@ -70,14 +82,13 @@ services:
           name: product-importer-redis
           property: connectionString
 
+  - type: redis
+    name: product-importer-redis
+    plan: starter
+    maxmemoryPolicy: allkeys-lru
+
 databases:
   - name: product-importer-db
     databaseName: product_importer
     user: product_user
     plan: starter
-
-services:
-  - type: redis
-    name: product-importer-redis
-    plan: starter
-    maxmemoryPolicy: allkeys-lru
